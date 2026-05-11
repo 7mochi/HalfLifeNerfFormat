@@ -20,12 +20,15 @@ SPAWN_PROTECTION = Spawn Protection: %d seconds
 INHERITED_GAMERULES = Patch
 INHERITED_GAMERULES_HL25 = HL25 (Buffed .357, 50 clip 9mmAR, '+use' speed)
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Gauss secondary-fire damage exponent: %.1f
+EGON_NERF_PERCENTAGE_MIN = Egon damage (minimum distance): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Egon damage (maximum distance): %d%%%
 
 [es]
 GAMERULES_TITLE = RULESET DEL SERVIDOR NERF
-GAUSS_NERF_PERCENTAGE = Reduccion de Gauss: %d%%%
-EGON_NERF_PERCENTAGE = Reduccion de Egon: %d%%%
-XBOW_NERF_PERCENTAGE = Reduccion de Ballesta: %d%%%
+GAUSS_NERF_PERCENTAGE = Nerf de Gauss: %d%%%
+EGON_NERF_PERCENTAGE = Nerf de Egon: %d%%%
+XBOW_NERF_PERCENTAGE = Nerf de Ballesta: %d%%%
 GAUSS_WALL_ONLY = Gauss solo en impactos directos
 BUNNY_HOP = Bunny Hop
 BUNNY_HOP_UNCAPPED = Sin limite de velocidad
@@ -43,6 +46,9 @@ SPAWN_PROTECTION = Proteccion al spawnear: %d segundos
 INHERITED_GAMERULES = Parche
 INHERITED_GAMERULES_HL25 = HL25 (Magnum mejorada, cargador de 50 para 9mmAR, velocidad '+use')
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Exponente de disparo secundario de Gauss: %.1f
+EGON_NERF_PERCENTAGE_MIN = Nerf de Egon (distancia mínima): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Nerf de Egon (distancia máxima): %d%%%
 
 [ru]
 GAMERULES_TITLE = НАБОР ПРАВИЛ HALF-LIFE NERF
@@ -66,6 +72,9 @@ SPAWN_PROTECTION = Защита при спавне: %d секунд
 INHERITED_GAMERULES = Патч
 INHERITED_GAMERULES_HL25 = HL25 (Усиленный .357, 50 патронов в 9mmAR, скорость с '+use')
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Экспонента урона вторичного выстрела Gauss: %.1f
+EGON_NERF_PERCENTAGE_MIN = Урон Egon (минимальная дистанция): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Урон Egon (максимальная дистанция): %d%%%
 
 [tr]
 GAMERULES_TITLE = HALF-LIFE NERF KURAL SETİ
@@ -89,6 +98,9 @@ SPAWN_PROTECTION = Doğma koruması: %d saniye
 INHERITED_GAMERULES = Patch
 INHERITED_GAMERULES_HL25 = HL25 (Güçlendirilmiş .357, 50 mermilik 9mmAR, '+use' ile hız)
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Gauss ikinci atış hasar üssü: %.1f
+EGON_NERF_PERCENTAGE_MIN = Egon hasarı (minimum mesafe): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Egon hasarı (maksimum mesafe): %d%%%
 
 [pt]
 GAMERULES_TITLE = CONJUNTO DE REGRAS DO SERVIDOR NERF
@@ -112,6 +124,35 @@ SPAWN_PROTECTION = Proteção de Spawn: %d segundos
 INHERITED_GAMERULES = Patch
 INHERITED_GAMERULES_HL25 = HL25 (.357 melhorado, 50 balas no 9mmAR, velocidade com '+use')
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Expoente de dano do disparo secundário do Gauss: %.1f
+EGON_NERF_PERCENTAGE_MIN = Dano da Egon (distância mínima): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Dano da Egon (distância máxima): %d%%%
+
+[bp]
+GAMERULES_TITLE = CONJUNTO DE REGRAS DO SERVIDOR NERF
+GAUSS_NERF_PERCENTAGE = Redução de dano da Gauss: %d%%%
+EGON_NERF_PERCENTAGE = Redução de dano da Egon: %d%%%
+XBOW_NERF_PERCENTAGE = Redução de dano da Besta: %d%%%
+GAUSS_WALL_ONLY = Gauss causa dano apenas em acertos diretos
+BUNNY_HOP = Bunny Hop
+BUNNY_HOP_UNCAPPED = Velocidade ilimitada
+BUNNY_HOP_CAPPED = Velocidade limitada
+SELF_GAUSS = Dano próprio da Gauss
+SELF_GAUSS_ZERO = Padrão
+SELF_GAUSS_ONE = Apenas acertos diretos
+SELF_GAUSS_TWO = Desativado
+SPAWN_TYPE = Tipo de Spawn
+SPAWN_TYPE_ZERO = HL25
+SPAWN_TYPE_ONE = Half-Life Legacy
+SPAWN_TYPE_TWO = Aleatório
+FLYING_CROWBAR = Clique direito para lançar o pé de cabra
+SPAWN_PROTECTION = Proteção de Spawn: %d segundos
+INHERITED_GAMERULES = Patch
+INHERITED_GAMERULES_HL25 = HL25 (.357 melhorado, 50 balas no 9mmAR, velocidade com '+use')
+INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Expoente de dano do disparo secundário da Gauss: %.1f
+EGON_NERF_PERCENTAGE_MIN = Dano da Egon (distância mínima): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Dano da Egon (distância máxima): %d%%%
 
 [ro]
 GAMERULES_TITLE = SET DE REGULI HALF-LIFE NERF
@@ -136,3 +177,6 @@ SPAWN_PROTECTION = Protecție la spawn: %d secunde
 INHERITED_GAMERULES = Patch
 INHERITED_GAMERULES_HL25 = HL25 (.357 îmbunătățit, încărcător 9mmAR de 50, viteză cu '+use')
 INHERITED_GAMERULES_LEGACY = Half-Life Legacy
+GAUSS_NERF_EXPONENT = Exponentul de daună al focului secundar Gauss: %.1f
+EGON_NERF_PERCENTAGE_MIN = Daună Egon (distanță minimă): %d%%%
+EGON_NERF_PERCENTAGE_MAX = Daună Egon (distanță maximă): %d%%%

@@ -1,0 +1,19 @@
+{
+  "compiler": {
+    "dir": "./.compiler",
+    "version": "1.9.0-git5302",
+    "dev": true
+  },
+  "input": {
+    "scripts": "./src/scripts"
+  },
+  "output": {
+    "plugins": "./valve/addons/amxmodx/plugins",
+    "assets": "./valve/",
+    "scripts": "./valve/addons/amxmodx/scripting",
+    "include": "./valve/addons/amxmodx/scripting/include"
+  },
+  "rules": {
+    "flatCompilation": false
+  }
+}
