@@ -6,10 +6,10 @@
 #include <xs>
 
 #define PLUGIN_NAME  			"Half-Life Nerf"
-#define PLUGIN_VERSION 			"1.1.0"
+#define PLUGIN_VERSION 			"1.1.1"
 #define PLUGIN_AUTHOR  			"szGabu"
 
-#define NERF_GAMENAME			"HL Nerf Server"
+#define NERF_GAMENAME			"HL Nerf"
 #define HL25_CHECK				"sv_allow_autoaim"
 
 #define CLS_BATTERY    			"item_battery"
@@ -24,22 +24,36 @@
 
 #define MAX_ITEMS 				64
 
+#define DISABLE_WALLGAUSS_DEFAULT_VALUE					"1"
+#define GAUSS_DMG_EXPONENT_DEFAULT_VALUE				"2.5"
+#define EGON_DMG_MIN_DISTANCE_DEFAULT_VALUE				"0.0"
+#define EGON_DMG_MAX_DISTANCE_DEFAULT_VALUE				"2048.0"
+#define EGON_DMG_MIN_DIST_MULTIPLIER_DEFAULT_VALUE		"0.75"
+#define EGON_DMG_MAX_DIST_MULTIPLIER_DEFAULT_VALUE		"0.25"
+#define SPAWN_PROTECT_DEFAULT_VALUE						"1"
+#define SPAWN_PROTECT_DEFAULT_TIME						"1"
+#define HEV_START_DEFAULT_VALUE							"15"
+#define SWAP_BATTERIES_WITH_HEALTHKITS_DEFAULT_VALUE	"1"
+#define SWAP_HEALTHKITS_WITH_BATTERIES_DEFAULT_VALUE	"1"
+
 new bool:g_bNerfFormatEnabled = false;
 
-new bool:g_bStopStreak = false;
-new Float:g_fStreakThreshold = 1.5;
-new Float:g_fStreakRollValue = 30.0;
-new bool:g_bDisableWallGauss = false;
-new Float:g_fGaussDmgExponent = 1.0;
-new Float:g_fEgonMinDistanceDmgMultiplier = 1.0;
-new Float:g_fEgonMaxDistanceDmgMultiplier = 1.0;
-new Float:g_fCrossbowDmgMultiplier = 1.0;
-new bool:g_bSpawnProtect = false;
-new Float:g_fSpawnProtectTime = 1.0;
+new bool:g_bStopStreak;
+new Float:g_fStreakThreshold;
+new Float:g_fStreakRollValue;
+new bool:g_bDisableWallGauss;
+new Float:g_fGaussDmgExponent;
+new Float:g_fEgonMinDistance;
+new Float:g_fEgonMaxDistance;
+new Float:g_fEgonMinDistanceDmgMultiplier;
+new Float:g_fEgonMaxDistanceDmgMultiplier;
+new bool:g_bSpawnProtect;
+new Float:g_fSpawnProtectTime;
+new g_iStartArmor;
+new bool:g_bSwapBatteriesWithHealthKits;
+new bool:g_bSwapHealthKitsWithBatteries;
+
 new g_iSpawnProtectShellThickness = 25;
-new bool:g_bSwapBatteriesWithHealthKits = false;
-new bool:g_bSwapHealthKitsWithBatteries = false;
-new g_iStartArmor = 0;
 new bool:g_bShowRuleSet = false;
 
 new Float:g_fWallSteep[3];
@@ -73,20 +87,6 @@ new Float:g_KitOrigin[MAX_ITEMS][3];
 new Float:g_KitAngles[MAX_ITEMS][3];
 new g_KitCount;
 
-#define STOP_STREAK_DEFAULT_VALUE						"1"
-#define STOP_STREAK_KD_DEFAULT_VALUE					"1.50"
-#define STOP_ITEM_PERCENTAGE_DEFAULT_VALUE				"30.00"
-#define DISABLE_WALLGAUSS_DEFAULT_VALUE					"1"
-#define GAUSS_DMG_EXPONENT_DEFAULT_VALUE				"2.5"
-#define EGON_DMG_MIN_DIST_MULTIPLIER_DEFAULT_VALUE		"0.75"
-#define EGON_DMG_MAX_DIST_MULTIPLIER_DEFAULT_VALUE		"0.25"
-#define CROSSBOW_DMG_MULTIPLIER_DEFAULT_VALUE			"0.0"
-#define SPAWN_PROTECT_DEFAULT_VALUE						"1"
-#define SPAWN_PROTECT_DEFAULT_TIME						"1"
-#define HEV_START_DEFAULT_VALUE							"15"
-#define SWAP_BATTERIES_WITH_HEALTHKITS_DEFAULT_VALUE	"1"
-#define SWAP_HEALTHKITS_WITH_BATTERIES_DEFAULT_VALUE	"1"
-
 public plugin_init()
 {
 	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
@@ -94,14 +94,15 @@ public plugin_init()
 	g_bIsHL25 = get_cvar_pointer(HL25_CHECK) != 0;
 
 	bind_pcvar_num(create_cvar("amx_nerf_enabled", "1", FCVAR_NONE, "Determines if the Nerf format should be enabled, takes effect at map start.", true, 0.0, true, 1.0), g_bNerfFormatEnabled);
-	bind_pcvar_num(create_cvar("amx_nerf_stop_streak", STOP_STREAK_DEFAULT_VALUE, FCVAR_NONE, "Determines if the leading player (by K/D, not score) should be additonally nerfed, items may dissapear forhim.", true, 0.0, true, 1.0), g_bStopStreak);
-	bind_pcvar_float(create_cvar("amx_nerf_stop_streak_threshold", STOP_STREAK_KD_DEFAULT_VALUE, FCVAR_NONE, "By how much the Streak Threshold must be leading forplayers to be additionally nerfed.", true, 1.0, true, 3.0), g_fStreakThreshold);
-	bind_pcvar_float(create_cvar("amx_nerf_stop_item_percentage", STOP_ITEM_PERCENTAGE_DEFAULT_VALUE, FCVAR_NONE, "The amount to roll forbanned items when an user is stomping, if above this value (0-100) then the item will be hidden from him.", true, 1.0, true, 100.0), g_fStreakRollValue);
+	bind_pcvar_num(create_cvar("amx_nerf_stop_streak", "0", FCVAR_NONE, "Determines if the leading player (by K/D, not score) should be additonally nerfed, items may dissapear forhim.", true, 0.0, true, 1.0), g_bStopStreak);
+	bind_pcvar_float(create_cvar("amx_nerf_stop_streak_threshold", "1.5", FCVAR_NONE, "By how much the Streak Threshold must be leading forplayers to be additionally nerfed.", true, 1.0, true, 3.0), g_fStreakThreshold);
+	bind_pcvar_float(create_cvar("amx_nerf_stop_item_percentage", "30.0", FCVAR_NONE, "The amount to roll forbanned items when an user is stomping, if above this value (0-100) then the item will be hidden from him.", true, 1.0, true, 100.0), g_fStreakRollValue);
 	bind_pcvar_num(create_cvar("amx_nerf_disable_wallgauss", DISABLE_WALLGAUSS_DEFAULT_VALUE, FCVAR_NONE, "Determines if vanilla 'wall gauss' shots should be disabled. If enabled, only true wall gauss shots will be registered as such.", true, 0.0, true, 1.0), g_bDisableWallGauss);
 	bind_pcvar_float(create_cvar("amx_nerf_nerfed_gauss_scalar", GAUSS_DMG_EXPONENT_DEFAULT_VALUE, FCVAR_NONE, "Exponent value for charged gauss shots.", true, 0.0, true, 100.0), g_fGaussDmgExponent);
+	bind_pcvar_float(create_cvar("amx_nerf_nerfed_mind_egon_distance", EGON_DMG_MIN_DISTANCE_DEFAULT_VALUE, FCVAR_NONE, "The minimum distance of the egon to be considered point blank. Higher value means the point blank will be considered further distance.", true, 0.0, true, 4096.0), g_fEgonMinDistance);
+	bind_pcvar_float(create_cvar("amx_nerf_nerfed_maxd_egon_distance", EGON_DMG_MAX_DISTANCE_DEFAULT_VALUE, FCVAR_NONE, "The maximum distance of the egon to be conisdered long distance. Victims further than this will not take less damage that the absolute minimum", true, 0.0, true, 4096.0), g_fEgonMaxDistance);
 	bind_pcvar_float(create_cvar("amx_nerf_nerfed_mind_egon_dmg_multiplier", EGON_DMG_MIN_DIST_MULTIPLIER_DEFAULT_VALUE, FCVAR_NONE, "Multiply the egon damage by this value on point blank. Less value is less damage", true, 0.0, true, 1.0), g_fEgonMinDistanceDmgMultiplier);
 	bind_pcvar_float(create_cvar("amx_nerf_nerfed_maxd_egon_dmg_multiplier", EGON_DMG_MAX_DIST_MULTIPLIER_DEFAULT_VALUE, FCVAR_NONE, "Multiply the egon damage by this value on distant attacks. Less value is less damage", true, 0.0, true, 1.0), g_fEgonMaxDistanceDmgMultiplier);
-	bind_pcvar_float(create_cvar("amx_nerf_nerfed_crossbow_dmg_multiplier", CROSSBOW_DMG_MULTIPLIER_DEFAULT_VALUE, FCVAR_NONE, "Multiply the crossbow damage by this value. Less value is less damage", true, 0.0, true, 1.0), g_fCrossbowDmgMultiplier);
 	bind_pcvar_num(create_cvar("amx_nerf_spawn_protect", SPAWN_PROTECT_DEFAULT_VALUE, FCVAR_NONE, "Determines if spawning players should be protected against instant damage.", true, 0.0, true, 1.0), g_bSpawnProtect);
 	bind_pcvar_float(create_cvar("amx_nerf_spawn_protect_time", SPAWN_PROTECT_DEFAULT_TIME, FCVAR_NONE, "Determines the time of spawn protection.", true, 0.0, true, 10.0), g_fSpawnProtectTime);
 	bind_pcvar_num(create_cvar("amx_nerf_spawn_protect_shell_thickness", "25", FCVAR_NONE, "Determines the visual shell around players if they're spawn protected.", true, 0.0, true, 255.0), g_iSpawnProtectShellThickness);
@@ -257,11 +258,10 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 		}
 	}
 
-	if(!(iBits & (1 << 4)) && g_fCrossbowDmgMultiplier > 0.0)
+	if(!(iBits & (1 << 4)) && g_bDisableWallGauss)
 	{
 		new szPart[128];
-		new iPercentage = floatround(g_fCrossbowDmgMultiplier * 100);
-		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "XBOW_NERF_PERCENTAGE", iPercentage);
+		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "GAUSS_WALL_ONLY");
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
 			iBits |= (1 << 4);
@@ -269,10 +269,10 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 		}
 	}
 
-	if(!(iBits & (1 << 5)) && g_bDisableWallGauss)
+	if(!(iBits & (1 << 5)))
 	{
 		new szPart[128];
-		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "GAUSS_WALL_ONLY");
+		formatex(szPart, charsmax(szPart), "- %L: %L^n", iClient, "BUNNY_HOP", iClient, g_bUncappedBunny ? "BUNNY_HOP_UNCAPPED" : "BUNNY_HOP_CAPPED");
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
 			iBits |= (1 << 5);
@@ -281,17 +281,6 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 	}
 
 	if(!(iBits & (1 << 6)))
-	{
-		new szPart[128];
-		formatex(szPart, charsmax(szPart), "- %L: %L^n", iClient, "BUNNY_HOP", iClient, g_bUncappedBunny ? "BUNNY_HOP_UNCAPPED" : "BUNNY_HOP_CAPPED");
-		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
-		{
-			iBits |= (1 << 6);
-			add(szGameRules, charsmax(szGameRules), szPart);
-		}
-	}
-
-	if(!(iBits & (1 << 7)))
 	{
 		new szPart[128];
 		new szOpt[32];
@@ -313,12 +302,12 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 		formatex(szPart, charsmax(szPart), "- %L: %s^n", iClient, "SELF_GAUSS", szOpt);
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
-			iBits |= (1 << 7);
+			iBits |= (1 << 6);
 			add(szGameRules, charsmax(szGameRules), szPart);
 		}
 	}
 
-	if(!(iBits & (1 << 8)))
+	if(!(iBits & (1 << 7)))
 	{
 		new szPart[128];
 		new szOpt[32];
@@ -340,15 +329,26 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 		formatex(szPart, charsmax(szPart), "- %L: %s^n", iClient, "SPAWN_TYPE", szOpt);
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
+			iBits |= (1 << 7);
+			add(szGameRules, charsmax(szGameRules), szPart);
+		}
+	}
+
+	if(!(iBits & (1 << 8)) && g_bSpawnProtect)
+	{
+		new szPart[128];
+		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "SPAWN_PROTECTION", floatround(g_fSpawnProtectTime));
+		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
+		{
 			iBits |= (1 << 8);
 			add(szGameRules, charsmax(szGameRules), szPart);
 		}
 	}
 
-	if(!(iBits & (1 << 9)) && g_bSpawnProtect)
+	if(!(iBits & (1 << 9)) && g_bCanThrowCrowbar)
 	{
 		new szPart[128];
-		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "SPAWN_PROTECTION", floatround(g_fSpawnProtectTime));
+		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "FLYING_CROWBAR");
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
 			iBits |= (1 << 9);
@@ -356,24 +356,13 @@ public Task_ShowGameRules(const aPack[2], iUserId)
 		}
 	}
 
-	if(!(iBits & (1 << 10)) && g_bCanThrowCrowbar)
-	{
-		new szPart[128];
-		formatex(szPart, charsmax(szPart), "- %L^n", iClient, "FLYING_CROWBAR");
-		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
-		{
-			iBits |= (1 << 10);
-			add(szGameRules, charsmax(szGameRules), szPart);
-		}
-	}
-
-	if(!(iBits & (1 << 11)))
+	if(!(iBits & (1 << 10)))
 	{
 		new szPart[128];
 		formatex(szPart, charsmax(szPart), "- %L: %L^n", iClient, "INHERITED_GAMERULES", iClient, g_bIsHL25 ? "INHERITED_GAMERULES_HL25" : "INHERITED_GAMERULES_LEGACY");
 		if(strlen(szPart) + strlen(szGameRules) < MAX_HUD_MESSAGE_LENGTH)
 		{
-			iBits |= (1 << 11);
+			iBits |= (1 << 10);
 			add(szGameRules, charsmax(szGameRules), szPart);
 		}
 		iEnd = 1;
@@ -433,8 +422,7 @@ public Task_UpdateLeadingPlayers()
 
 public HamForward_GaussWeaponIdle_Pre(iGauss)
 {
-	// the variable is an int in the HLSDK, but it's wrongly prefixed as float
-	new fInAttack = get_ent_data(iGauss, "CBaseEntity", "m_fInAttack");
+	new fInAttack = get_ent_data(iGauss, "CBaseEntity", "m_fInAttack"); // int in HLSDK, wrongly prefixed as float
 	if(fInAttack != 0)
 	{
 		new iOwner = get_ent_data_entity(iGauss, "CBasePlayerItem", "m_pPlayer");
@@ -468,12 +456,11 @@ public MetaForward_GameDesc_Pre()
 {
 	new bool:bIsCustomVariant = false; 
 
-	if(g_bStopStreak != (str_to_num(STOP_STREAK_DEFAULT_VALUE) == 1) || g_fStreakThreshold != str_to_float(STOP_STREAK_KD_DEFAULT_VALUE) || 
-		g_fStreakRollValue != str_to_float(STOP_ITEM_PERCENTAGE_DEFAULT_VALUE) || g_bDisableWallGauss != (str_to_num(DISABLE_WALLGAUSS_DEFAULT_VALUE) == 1) ||
-		g_fGaussDmgExponent != str_to_float(GAUSS_DMG_EXPONENT_DEFAULT_VALUE) || g_fEgonMinDistanceDmgMultiplier != str_to_float(EGON_DMG_MIN_DIST_MULTIPLIER_DEFAULT_VALUE) ||
-		g_fEgonMaxDistanceDmgMultiplier != str_to_float(EGON_DMG_MAX_DIST_MULTIPLIER_DEFAULT_VALUE) || g_bSwapBatteriesWithHealthKits != bool:str_to_num(SWAP_BATTERIES_WITH_HEALTHKITS_DEFAULT_VALUE) ||
-		g_bSwapHealthKitsWithBatteries != bool:str_to_num(SWAP_HEALTHKITS_WITH_BATTERIES_DEFAULT_VALUE) || g_fCrossbowDmgMultiplier != str_to_float(CROSSBOW_DMG_MULTIPLIER_DEFAULT_VALUE) || 
-		g_iStartArmor != str_to_num(HEV_START_DEFAULT_VALUE) || g_bSpawnProtect != (str_to_num(SPAWN_PROTECT_DEFAULT_VALUE) == 1) || g_fSpawnProtectTime != str_to_float(SPAWN_PROTECT_DEFAULT_TIME))
+	if(g_bDisableWallGauss != (str_to_num(DISABLE_WALLGAUSS_DEFAULT_VALUE) == 1) || g_fGaussDmgExponent != str_to_float(GAUSS_DMG_EXPONENT_DEFAULT_VALUE) || 
+		g_fEgonMinDistanceDmgMultiplier != str_to_float(EGON_DMG_MIN_DIST_MULTIPLIER_DEFAULT_VALUE) || g_fEgonMaxDistanceDmgMultiplier != str_to_float(EGON_DMG_MAX_DIST_MULTIPLIER_DEFAULT_VALUE) || 
+		g_bSwapBatteriesWithHealthKits != bool:str_to_num(SWAP_BATTERIES_WITH_HEALTHKITS_DEFAULT_VALUE) || g_bSwapHealthKitsWithBatteries != bool:str_to_num(SWAP_HEALTHKITS_WITH_BATTERIES_DEFAULT_VALUE) || 
+		g_iStartArmor != str_to_num(HEV_START_DEFAULT_VALUE) || g_bSpawnProtect != (str_to_num(SPAWN_PROTECT_DEFAULT_VALUE) == 1) || 
+		g_fSpawnProtectTime != str_to_float(SPAWN_PROTECT_DEFAULT_TIME))
 		bIsCustomVariant = true;
 	
 	new szGameName[64];
@@ -596,8 +583,8 @@ public HamForward_PlayerTakeDamage_Pre(iVictim, iInflictor, iAttacker, Float:fDa
 	{
 		case HLW_GAUSS:
 		{
-			new hWeaponIndex = get_ent_data_entity(iAttacker, "CBasePlayer", "m_pActiveItem");
-			new bool:bPrimaryFire = get_ent_data(hWeaponIndex, "CGauss", "m_fPrimaryFire");
+			new hActiveIndex = get_ent_data_entity(iAttacker, "CBasePlayer", "m_pActiveItem");
+			new bool:bPrimaryFire = get_ent_data(hActiveIndex, "CGauss", "m_fPrimaryFire"); // bool in HLSDK, wrongly prefixed as float
 
 			if(bPrimaryFire || g_fGaussDmgExponent == 0.0)
 				return HAM_IGNORED;
@@ -638,37 +625,16 @@ public HamForward_PlayerTakeDamage_Pre(iVictim, iInflictor, iAttacker, Float:fDa
 				return HAM_HANDLED;
 			}
 		}
-		case HLW_CROSSBOW:
-		{
-			if(!(iDamageBits & DMG_BLAST) && g_fCrossbowDmgMultiplier > 0.0)
-			{
-				SetHamParamFloat(4, fDamage*g_fCrossbowDmgMultiplier);
-				return HAM_HANDLED;
-			}
-		}
 		case HLW_EGON:
 		{
-			// Get positions of victim and attacker
 			new Float:vecVictimPos[3], Float:vecAttackerPos[3];
 			pev(iVictim, pev_origin, vecVictimPos);
 			pev(iAttacker, pev_origin, vecAttackerPos);
 			
-			// Calculate distance between them
-			new Float:fDistance = get_distance_f(vecVictimPos, vecAttackerPos);
+			new Float:fDistance = floatclamp(get_distance_f(vecVictimPos, vecAttackerPos), g_fEgonMinDistance, g_fEgonMaxDistance);
+
+			new Float:fDistanceDmgMultiplier = g_fEgonMinDistanceDmgMultiplier + (g_fEgonMaxDistanceDmgMultiplier - g_fEgonMinDistanceDmgMultiplier) * ((fDistance - g_fEgonMinDistance) / (g_fEgonMaxDistance - g_fEgonMinDistance));
 			
-			// Define distance thresholds (adjust these values as needed)
-			new Float:fMinDistance = 0.0;
-			new Float:fMaxDistance = 4096.0; // Adjust based on your weapon range
-			
-			// Clamp distance to min/max range
-			if (fDistance < fMinDistance) fDistance = fMinDistance;
-			if (fDistance > fMaxDistance) fDistance = fMaxDistance;
-			
-			// Interpolate between min and max damage multipliers based on distance
-			new Float:fDistanceFraction = (fDistance - fMinDistance) / (fMaxDistance - fMinDistance);
-			new Float:fDistanceDmgMultiplier = g_fEgonMinDistanceDmgMultiplier + (g_fEgonMaxDistanceDmgMultiplier - g_fEgonMinDistanceDmgMultiplier) * fDistanceFraction;
-			
-			// Apply both the egon multiplier and distance multiplier
 			SetHamParamFloat(4, floatmax(1.0, fDamage * fDistanceDmgMultiplier));
 			return HAM_HANDLED;
 		}
