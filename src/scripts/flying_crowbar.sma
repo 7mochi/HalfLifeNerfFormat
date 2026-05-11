@@ -9,7 +9,7 @@
 #define FLYING_CROWBAR_ENTITY_NAME      "projectile_crowbar"
 
 #define PLUGIN_NAME                     "Flying Crowbar"
-#define PLUGIN_VERSION                  "1.0.0-25w18a"
+#define PLUGIN_VERSION                  "1.0.1"
 #define PLUGIN_AUTHOR                   "szGabu, forked from SPiNX, Gauss and GordonFreeman"
 
 new const g_iColorPalette[256][3] = {
@@ -304,6 +304,7 @@ static g_cvarCrowbarTrail;
 static g_cvarCrowbarRenderColor;
 static g_cvarCrowbarTrailColor;
 static g_cvarCrowbarDamage;
+static g_cvarCrowbarDistanceDamageMult;
 
 static Float:g_fCrowbarTime;
 static g_iCrowbarSpeed;
@@ -312,6 +313,7 @@ static bool:g_bCrowbarTrail;
 static g_iCrowbarRenderColor;
 static g_iCrowbarTrailColor;
 static Float:g_fCrowbarDamage;
+static Float:g_fCrowbarDistanceDamageMult;
 
 static bool:g_bSvenCoopRunning;
 
@@ -356,6 +358,7 @@ public plugin_init()
     g_cvarCrowbarRenderColor = create_cvar("fly_crowbar_trail","1", FCVAR_NONE, "Determines if the flying crowbar should have a trail", true, 0.0, true, 1.0);
     g_cvarCrowbarTrailColor = create_cvar("fly_crowbar_trail_color","2", FCVAR_NONE, "Determines the trail color of the crowbar. 0 = Random, 1 = Use Player's Top Color, 2 = Use Player's Bottom Color", true, 0.0, true, 2.0);
     g_cvarCrowbarDamage = create_cvar("fly_crowbar_damage","300.0", FCVAR_NONE, "Determines the damage of the flying crowbar.", true, 0.0);
+    g_cvarCrowbarDistanceDamageMult = create_cvar("fly_crowbar_distance_damage_mult","10.0", FCVAR_NONE, "Damage multiplier for distance-based hits. Final damage = distance_in_meters * this value.", true, 0.0);
 
     register_dictionary("flying_crowbar.txt");
 
@@ -371,6 +374,7 @@ public plugin_cfg()
     bind_pcvar_num(g_cvarCrowbarRenderColor, g_bCrowbarTrail);
     bind_pcvar_num(g_cvarCrowbarTrailColor, g_iCrowbarTrailColor);
     bind_pcvar_float(g_cvarCrowbarDamage, g_fCrowbarDamage);
+    bind_pcvar_float(g_cvarCrowbarDistanceDamageMult, g_fCrowbarDistanceDamageMult);
 }
 
 public Message_DeathMsg()
@@ -418,7 +422,7 @@ public FlyCrowbar_Touch(iCrowbar, iVictim)
     {
         //we landed on a player or a non-bsp model entity (a monster, for example)
         new Float:fDist = get_distance_f(fStartingPos, fOrigin) * 0.0254;
-        new Float:fDamage = fDist*25.0;
+        new Float:fDamage = fDist * g_fCrowbarDistanceDamageMult;
         ExecuteHamB(Ham_TakeDamage, iVictim, iCrowbar, iClient, fDamage, DMG_CLUB);
         if(iClient)
             client_print(iClient, print_center, "%L", iClient, "FLYING_CROWBAR_HIT", floatround(fDamage), floatround(fDist));
